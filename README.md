@@ -8,5 +8,5 @@ The problem is solved by the finite element method.
 ![Zadanie](https://raw.githubusercontent.com/SzymonTyburczy/differential-equations/main/Screenshot%202024-12-31%20005902.png)
 
 
-![Zadanie pełne](https://github.com/SzymonTyburczy/differential-equations/blob/main/zadanie_obliczeniowe-1%20(1).pdf)
+[![Zadanie pełne](https://github.com/SzymonTyburczy/differential-equations/blob/main/zadanie_obliczeniowe-1%20(1).pdf)](https://github.com/SzymonTyburczy/differential-equations/blob/main/zadanie_obliczeniowe-1%20(1).pdf)
 
