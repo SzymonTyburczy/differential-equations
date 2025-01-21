@@ -1,13 +1,15 @@
 # problem numer 1 - rownanie transportu ciepla
 import numpy as np
+import matplotlib.pyplot as plt
 
 MIN_INTEGRATION_POINTS = 2000
 LOWER_BOUND = 0.0
 UPPER_BOUND = 2.0
-
+WYNIK = []
 n = int(input("Podaj n - ilosc elementow w MES: "))
 
 
+# Funkcja k(x) dana w zadaniu
 def k(x):
     if 1.0 >= x >= 0.0:
         return 1
@@ -15,6 +17,7 @@ def k(x):
         return 2.0
 
 
+# Funkcja ei dana na cwiczeniach
 def ei(xi, h, x):
     if xi - h <= x < xi:
         return (x - (xi - h)) / h
@@ -24,6 +27,7 @@ def ei(xi, h, x):
         return 0.0
 
 
+# Funkcja ei pochodna
 def eprim(xi, h, x):
     if xi > x >= xi - h:
         return 1.0 / h
@@ -33,14 +37,15 @@ def eprim(xi, h, x):
         return 0.0
 
 
+# tu sie dzieje cala magia
 def main(n):
     # Alokacja tablic: macierz A, wektor wyrazów wolnych f oraz wektor rozwiązań u
-    A = np.zeros((n, n), dtype=float)  # macierz kwadratowa n na n
-    f_col = np.zeros(n, dtype=float)  # macierz 1 na n funkcji
-    u_col = np.zeros(n, dtype=float)  # macierz 1 na n u
+    A = np.zeros((n, n), dtype=float)  # macierz kwadratowa n na n wypelniona zerami
+    f_col = np.zeros(n, dtype=float)  # macierz 1 na n funkcji wypelniona zerami
+    u_col = np.zeros(n, dtype=float)  # macierz 1 na n u wypelniona zerami
 
     # Inicjalizacja wektora prawej strony za pomoca odpowiednich wartosci
-    init_result_column(f_col, n)
+    f_col[0] = -20
 
     # liczmy h ktore jest rowne 2/n
     h = (UPPER_BOUND - LOWER_BOUND) / n
@@ -52,23 +57,8 @@ def main(n):
     # Rozwiązanie układu
     solve(A, f_col, u_col)
 
-    # Zapis wyników do pliku CSV
-    with open("results.csv", "w") as outfile:
-        outfile.write("i,ui\n")
-        for i in range(n):
-            outfile.write(f"{i}, {u_col[i]}\n")
-
-    print("Zapisano wyniki w pliku results.csv")
-
-
-def init_result_column(f_col, n):
-    """
-    Uzupełnia kolumnę prawej strony (wyrazy wolne).
-    Pierwszy węzeł -20, pozostałe 0.
-    """
-    f_col[0] = -20.0
-    for i in range(1, n):
-        f_col[i] = 0.0
+    for i in range(n):
+        WYNIK.append((i, u_col[i]))
 
 
 def build_matrix(A, n, h):
@@ -95,18 +85,6 @@ def coefficient(row, col, h, n):
 
 
 def quad_trapezoid(f1, f3, row, col, h, n):
-    """
-    Całkowanie iloczynu k(x)*e'(x_i)*e'(x_j) (dla węzłów row, col)
-    metodą TRAPEZÓW na TEJ SAMEJ siatce, co w oryginalnym quad_simpson.
-
-    W oryginalnym quad_simpson mamy:
-      ih = (b - a) / (integration_points + 2)
-      - zaczynamy liczyć od x = a + ih
-      - kończymy na x = a + (integration_points+2)*ih = b
-
-    Tutaj robimy to samo, ale liczymy całkę metodą trapezów.
-    """
-
     # 1. Ustalamy przedział całkowania na podstawie row, col
     lower = max(row, col) - 1 if max(row, col) != 0 else 0
     upper = min(row, col) + 1
@@ -146,9 +124,8 @@ def quad_trapezoid(f1, f3, row, col, h, n):
 
 
 def echelon_form(A, f_col):
-    """
-    Przekształca macierz do postaci schodkowej (eliminacja Gaussa w wersji 'prostej').
-    """
+    # Przekształca macierz do postaci schodkowej (eliminacja Gaussa w wersji 'prostej')
+
     n = A.shape[0]
     for i in range(n - 1):
         pivot = A[i, i]
@@ -176,4 +153,19 @@ def solve(A, f_col, u_col):
         u_col[i] = ssum / A[i, i]
 
 
+def main2():
+    u_values = []
+    for i in range(len(WYNIK)):
+        u_values.append(WYNIK[i][1])
+    n = len(u_values)
+    x_values = np.linspace(0.0, 2.0, n)
+    plt.plot(x_values, u_values)
+    plt.grid()
+    plt.title('Równanie transportu ciepła, n = ' + str(n))
+    plt.xlabel('iksy')
+    plt.ylabel('u(x)')
+    plt.show()
+
+
 main(n)
+main2()
