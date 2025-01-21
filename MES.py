@@ -132,7 +132,7 @@ def solve(A, f_col, u_col):
     """
     Rozwiązuje układ równań A u = f (macierz już w postaci schodkowej).
     """
-    n = A.shape[0] #zwraca dimensje oraz il elementow
+    n = A.shape[0]
     for i in range(n-1, -1, -1):
         ssum = f_col[i]
         # Odejmujemy znane już składniki z prawej strony
