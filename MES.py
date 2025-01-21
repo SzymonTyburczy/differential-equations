@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-MIN_INTEGRATION_POINTS = 2000
+MIN_INTEGRATION_POINTS = 2500
 LOWER_BOUND = 0.0
 UPPER_BOUND = 2.0
 WYNIK = []
@@ -52,7 +52,7 @@ def main(n):
     build_matrix(A, n, h)
 
     # Eliminacja Gaussa (postać schodkowa)
-    echelon_form(A, f_col)
+    Row_Echelon_Form(A, f_col)
 
     # Rozwiązanie układu
     solve(A, f_col, u_col)
@@ -67,65 +67,54 @@ def build_matrix(A, n, h):
     - A[0,0] i A[0,1], A[n-1,n-2], A[n-1,n-1],
     - Wewnątrz pętli trojdiagonalnej: i-1, i, i+1.
     """
-    A[0, 0] = coefficient(0, 0, h, n)
+    A[0, 0] = calculate(0, 0, h, n)
     if n > 1:
-        A[0, 1] = coefficient(0, 1, h, n)
+        A[0, 1] = calculate(0, 1, h, n)
 
     for i in range(1, n - 1):
-        for j in range(i - 1, i + 2):
-            A[i, j] = coefficient(i, j, h, n)
+        for j in range(i - 1, i + 2):  # te 3 obok siebie
+            A[i, j] = calculate(i, j, h, n)
 
     if n > 1:
-        A[n - 1, n - 2] = coefficient(n - 1, n - 2, h, n)
-        A[n - 1, n - 1] = coefficient(n - 1, n - 1, h, n)
+        A[n - 1, n - 2] = calculate(n - 1, n - 2, h, n)
+        A[n - 1, n - 1] = calculate(n - 1, n - 1, h, n)
 
 
-def coefficient(row, col, h, n):
+def calculate(row, col, h, n):
     return -ei(col * h, h, 0.0) * ei(row * h, h, 0.0) + quad_trapezoid(k, eprim, row, col, h, n)
 
 
 def quad_trapezoid(f1, f3, row, col, h, n):
-    # 1. Ustalamy przedział całkowania na podstawie row, col
-    lower = max(row, col) - 1 if max(row, col) != 0 else 0
+    if max(row, col) != 0:
+        lower = max(row, col) - 1
+    else:
+        lower = 0
     upper = min(row, col) + 1
 
     a = lower * h
     b = upper * h
 
-    # 2. Liczba podprzedziałów w całkowaniu
     integration_points = max(MIN_INTEGRATION_POINTS, n)
 
-    # 3. Krok siatki do całkowania
-    ih = (b - a) / (integration_points + 2)
+    ih = (b - a) / (integration_points+2)
 
-    # 4. Definiujemy funkcję, którą całkujemy:
-    #    f(x) = k(x) * e'(x_{col},h,x) * e'(x_{row},h,x)
     def integrand(x):
         return f1(x) * f3(col * h, h, x) * f3(row * h, h, x)
 
-    # 5. Zaczynamy od sumy wartości w punktach: x_1 = a+ih, ..., x_{m+1} = b
-    #    Gdzie m = integration_points + 1
-    #    Metoda trapezów:  ∫ f(x)dx ≈ (dx/2)[f(x1)+2*∑f(x2..x_m)+f(x_{m+1})]
-
-    # Pierwszy punkt x1 i ostatni punkt x_{m+1}
     x_first = a + 1 * ih
     x_last = a + (integration_points + 1) * ih
-    # (Uwaga:  x_{integration_points+2} = b)
 
     sum_val = integrand(x_first) + integrand(x_last)
 
-    # Dodajemy 2 * f(xi) dla i=2..(integration_points)
     for i in range(2, integration_points + 1):
         x_i = a + i * ih
         sum_val += 2.0 * integrand(x_i)
 
-    # Klasyczny wzór trapezów:  (dx/2) * [f(x1) + 2*... + f(x_{m+1})]
     return 0.5 * ih * sum_val
 
 
-def echelon_form(A, f_col):
+def Row_Echelon_Form(A, f_col):
     # Przekształca macierz do postaci schodkowej (eliminacja Gaussa w wersji 'prostej')
-
     n = A.shape[0]
     for i in range(n - 1):
         pivot = A[i, i]
@@ -143,8 +132,8 @@ def solve(A, f_col, u_col):
     """
     Rozwiązuje układ równań A u = f (macierz już w postaci schodkowej).
     """
-    n = A.shape[0]
-    for i in reversed(range(n)):
+    n = A.shape[0] #zwraca dimensje oraz il elementow
+    for i in range(n-1, -1, -1):
         ssum = f_col[i]
         # Odejmujemy znane już składniki z prawej strony
         for j in range(i + 1, n):
