@@ -90,10 +90,11 @@ def quad_trapezoid(f1, f3, row, col, h, n):
     else:
         lower = 0
     upper = min(row, col) + 1
-
+    
     a = lower * h
     b = upper * h
-
+    if a >= b:
+        return 0.0
     integration_points = max(MIN_INTEGRATION_POINTS, n)
 
     ih = (b - a) / (integration_points+2)
